@@ -1,5 +1,11 @@
 # bin2img-classifier
 
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
+[![CatBoost](https://img.shields.io/badge/ML-CatBoost-FFCC00.svg)](https://catboost.ai/)
+[![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)](./Dockerfile)
+[![CI](https://github.com/bocchisad/bin2img-classifier/actions/workflows/ci.yml/badge.svg)](https://github.com/bocchisad/bin2img-classifier/actions/workflows/ci.yml)
+
 Binary Visualizer & Malware Family Classifier.
 
 Converts executables (`.exe`, `.dll`, `.elf`, `.macho` / raw blobs) into grayscale byteplots and thermal entropy heatmaps, extracts GLCM/LBP + section-entropy features, and classifies family patterns with CatBoost — plus heuristic rules, risk score / verdict, analysis history, async jobs, and HTML reports.
