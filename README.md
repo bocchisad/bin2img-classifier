@@ -5,6 +5,7 @@
 [![CatBoost](https://img.shields.io/badge/ML-CatBoost-FFCC00.svg)](https://catboost.ai/)
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)](./Dockerfile)
 [![CI](https://github.com/bocchisad/bin2img-classifier/actions/workflows/ci.yml/badge.svg)](https://github.com/bocchisad/bin2img-classifier/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 Binary Visualizer & Malware Family Classifier.
 
@@ -145,5 +146,7 @@ pytest -q
 GitHub Actions runs train + pytest on Python 3.11 and 3.12.
 
 ## License / disclaimer
+
+MIT — see [`LICENSE`](./LICENSE).
 
 For defensive research and education only. Do not use to develop or deploy malware. Handle real samples in an isolated lab.
