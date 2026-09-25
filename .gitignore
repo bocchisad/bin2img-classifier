@@ -1,0 +1,29 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Artifacts (later stages)
+*.cbm
+*.png
+artifacts/
+data/synthetic/
+data/benign/**
+data/malware/**
+!data/**/.gitkeep
+!data/README.md
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.db
+sample.exe/

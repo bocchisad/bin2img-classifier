@@ -1,0 +1,14 @@
+# Stage 1–5 deps (core + CatBoost + FastAPI). Stage 6 adds CLI packaging notes.
+pefile==2024.8.26
+lief==0.16.7
+numpy==2.5.3
+opencv-python-headless==4.11.0.86
+scikit-image==0.26.0
+scikit-learn==1.7.2
+catboost==1.2.10
+fastapi==0.141.1
+uvicorn[standard]==0.35.0
+python-multipart==0.0.20
+pydantic==2.13.5
+httpx==0.28.1
+pytest==8.3.5

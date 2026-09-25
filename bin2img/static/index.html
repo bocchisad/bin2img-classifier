@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>bin2img</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=JetBrains+Mono:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:#121712; --muted:#4d5a50; --line:#1e2a22; --panel:#eef3ec;
+      --accent:#0a7a5c; --warn:#b5431f; --hot:#c0392b;
+      --mono:"JetBrains Mono",monospace; --sans:"DM Sans",system-ui,sans-serif;
+      --display:"Syne","DM Sans",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:var(--sans);color:var(--ink);
+      background:linear-gradient(90deg,rgba(18,23,18,.04) 1px,transparent 1px) 0 0/28px 28px,
+      linear-gradient(rgba(18,23,18,.04) 1px,transparent 1px) 0 0/28px 28px,
+      radial-gradient(ellipse at 80% -10%,#c5ddd2 0%,transparent 45%),
+      linear-gradient(165deg,#d5e0d6,#c2cfc4 60%,#aebdb1)}
+    header{padding:1.2rem 1.4rem;border-bottom:2px solid var(--line);display:flex;flex-wrap:wrap;gap:.75rem 1.5rem;justify-content:space-between;align-items:end;background:rgba(238,243,236,.92)}
+    .brand h1{margin:0;font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);letter-spacing:-.04em;font-weight:800}
+    .brand p{margin:.35rem 0 0;color:var(--muted);max-width:36rem;font-size:.92rem}
+    .health{font-family:var(--mono);font-size:.72rem;border:2px solid var(--line);padding:.4rem .65rem;background:var(--panel)}
+    .health.on{box-shadow:inset 3px 0 0 var(--accent)} .health.off{box-shadow:inset 3px 0 0 var(--warn)}
+    main{display:grid;gap:1rem;padding:1rem 1.4rem 2rem;grid-template-columns:1fr}
+    @media(min-width:1100px){main{grid-template-columns:320px 1fr 280px}}
+    .box{border:2px solid var(--line);background:var(--panel);padding:.9rem}
+    h2{margin:0 0 .65rem;font-family:var(--display);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
+    .drop{display:flex;flex-direction:column;gap:.3rem;justify-content:center;min-height:120px;border:2px dashed var(--line);padding:.9rem;cursor:pointer;background:rgba(255,255,255,.35)}
+    .drop.drag{background:#d7ebe1;border-color:var(--accent)}
+    .drop span{font-family:var(--mono);font-size:.72rem;color:var(--muted);word-break:break-all}
+    input[type=file]{display:none}
+    button{margin-top:.55rem;width:100%;border:2px solid var(--line);background:var(--accent);color:#f3fff9;font:700 .95rem var(--sans);padding:.65rem;cursor:pointer}
+    button.secondary{background:#fff;color:var(--ink)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .status{font-family:var(--mono);font-size:.75rem;color:var(--muted);min-height:1.1rem;margin:.45rem 0 .8rem}
+    .verdict{font-family:var(--display);font-size:1.5rem;font-weight:800;margin:0}
+    .score{font-family:var(--mono);font-size:.85rem;color:var(--muted);margin:.2rem 0 .7rem}
+    .bars{display:grid;gap:.35rem;margin-bottom:.7rem}
+    .bar-row{display:grid;grid-template-columns:1fr auto;gap:.3rem;align-items:center}
+    .bar-row label,.bar-row em{font-family:var(--mono);font-size:.65rem;font-style:normal}
+    .track{grid-column:1/-1;height:7px;background:#d5ddd4;border:1px solid var(--line);overflow:hidden}
+    .fill{height:100%;width:0;background:linear-gradient(90deg,#0d5c46,#12a37a);transition:width .5s ease}
+    .tags{display:flex;flex-wrap:wrap;gap:.3rem;margin:0 0 .8rem}
+    .tag{font-family:var(--mono);font-size:.65rem;border:1px solid var(--line);padding:.15rem .4rem;background:#fff}
+    .tag.warn{background:#f6ddd4;color:var(--warn);border-color:var(--warn)}
+    .tag.ok{background:#d5ebe2;color:var(--accent)}
+    .kv{font-family:var(--mono);font-size:.72rem;background:rgba(255,255,255,.4);border:1px solid #b7c3b8;padding:.5rem}
+    .kv div{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px dotted #b7c3b8;padding:.12rem 0}
+    .kv div:last-child{border:0}
+    .kv b{color:var(--muted);font-weight:600}
+    .imgs{display:grid;gap:.75rem;grid-template-columns:1fr;margin-bottom:.8rem}
+    @media(min-width:700px){.imgs{grid-template-columns:1fr 1fr}}
+    figure{margin:0;border:2px solid var(--line);background:#0d120f;padding:.4rem;min-height:160px}
+    figure img{display:block;width:100%;object-fit:contain;image-rendering:pixelated}
+    figcaption{color:#c5d0c7;font-family:var(--mono);font-size:.68rem;margin-top:.35rem}
+    table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
+    th,td{border-bottom:1px solid #b7c3b8;text-align:left;padding:.35rem .25rem}
+    th{color:var(--muted)}
+    tr.hot td{color:var(--hot);font-weight:600}
+    .hist button{margin-top:.25rem;font-size:.75rem;padding:.4rem}
+    .hist-item{font-family:var(--mono);font-size:.68rem;border-bottom:1px solid #b7c3b8;padding:.35rem 0;cursor:pointer}
+    .hist-item:hover{color:var(--accent)}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <h1>bin2img</h1>
+    <p>Binary visualizer &amp; classifier — risk score, rules, history, async jobs.</p>
+  </div>
+  <div class="health off" id="health">model: checking…</div>
+</header>
+<main>
+  <section class="box">
+    <h2>Upload</h2>
+    <label class="drop" id="drop"><strong>Drop binary or click</strong><span id="fname">.exe · .dll · .elf · .bin</span><input id="file" type="file" multiple /></label>
+    <label style="display:block;margin-top:.55rem;font-family:var(--mono);font-size:.68rem;color:var(--muted)">API key (if server requires it)
+      <input id="apiKey" type="password" placeholder="X-API-Key" style="display:block;width:100%;margin-top:.25rem;border:2px solid var(--line);padding:.4rem;font:inherit;background:#fff" />
+    </label>
+    <button id="go" disabled>Analyze</button>
+    <button class="secondary" id="goAsync" disabled>Analyze async</button>
+    <p class="status" id="status">Waiting for file</p>
+    <h2>Verdict</h2>
+    <div class="verdict" id="verdict">—</div>
+    <div class="score" id="scoreLine">risk — / 100</div>
+    <div class="pred-label" id="pred" style="font-family:var(--display);font-weight:800;font-size:1.1rem">—</div>
+    <div class="score" id="predSub">No classification yet</div>
+    <div class="bars" id="bars"></div>
+    <div class="tags" id="tags"></div>
+    <h2>Explain</h2>
+    <div class="kv" id="explain"><div><b>status</b><span>upload a file</span></div></div>
+    <p style="margin:.6rem 0 0"><a id="reportLink" href="#" style="font-family:var(--mono);font-size:.75rem;color:var(--accent)">Download HTML report</a></p>
+  </section>
+  <section class="box">
+    <h2>Visualizations</h2>
+    <div class="imgs">
+      <figure><img id="gray" alt="gray"/><figcaption>Grayscale byteplot</figcaption></figure>
+      <figure><img id="heat" alt="heat"/><figcaption>Thermal entropy</figcaption></figure>
+    </div>
+    <h2>Sections</h2>
+    <div style="overflow:auto"><table><thead><tr><th>Name</th><th>Virt</th><th>Raw</th><th>Entropy</th><th>Exec</th></tr></thead><tbody id="sections"><tr><td colspan="5" style="color:#4d5a50">No sections yet</td></tr></tbody></table></div>
+    <h2 style="margin-top:1rem">Rules</h2>
+    <div style="overflow:auto;max-height:180px"><table><thead><tr><th>Rule</th><th>Sev</th><th>W</th><th>Detail</th></tr></thead><tbody id="rules"><tr><td colspan="4" style="color:#4d5a50">—</td></tr></tbody></table></div>
+    <h2 style="margin-top:1rem">Metadata</h2>
+    <div class="kv" id="meta"><div><b>status</b><span>upload a file</span></div></div>
+  </section>
+  <section class="box hist">
+    <h2>History</h2>
+    <button class="secondary" id="refreshHist">Refresh</button>
+    <div id="history"></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fileInput=$('file'), drop=$('drop'), fname=$('fname'), go=$('go'), goAsync=$('goAsync');
+const status=$('status'), verdict=$('verdict'), scoreLine=$('scoreLine'), pred=$('pred'), predSub=$('predSub');
+const bars=$('bars'), tags=$('tags'), explain=$('explain'), meta=$('meta'), sections=$('sections'), rules=$('rules');
+const gray=$('gray'), heat=$('heat'), health=$('health'), history=$('history'), reportLink=$('reportLink');
+const apiKeyInput=$('apiKey');
+let currentId=null;
+apiKeyInput.value = localStorage.getItem('bin2img_api_key') || '';
+apiKeyInput.onchange = () => localStorage.setItem('bin2img_api_key', apiKeyInput.value.trim());
+
+function authHeaders(){
+  const k = (apiKeyInput.value || localStorage.getItem('bin2img_api_key') || '').trim();
+  return k ? {'X-API-Key': k} : {};
+}
+function errDetail(data, fallback){
+  const d = data && data.detail;
+  if(typeof d === 'string') return d;
+  if(Array.isArray(d)) return d.map(x=>x.msg||JSON.stringify(x)).join('; ');
+  return fallback;
+}
+
+fetch('/api/v1/health').then(r=>r.json()).then(h=>{
+  const n = (h.classes||[]).length || h.classes_count || 0;
+  health.textContent = h.model_loaded ? `model: ready · ${n} classes` : 'model: missing';
+  if(h.auth_required) health.textContent += ' · auth on';
+  health.className = 'health ' + (h.model_loaded ? 'on' : 'off');
+}).catch(()=>{ health.textContent='model: unreachable'; health.className='health off'; });
+
+function setFiles(list){
+  if(!list || !list.length) return;
+  const dt=new DataTransfer(); [...list].forEach(f=>dt.items.add(f));
+  fileInput.files=dt.files;
+  fname.textContent = list.length===1 ? `${list[0].name} · ${list[0].size.toLocaleString()} bytes` : `${list.length} files selected`;
+  go.disabled=false; goAsync.disabled=false; status.textContent='Ready';
+}
+fileInput.onchange=()=>setFiles(fileInput.files);
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
+drop.addEventListener('drop',e=>{ if(e.dataTransfer.files?.length) setFiles(e.dataTransfer.files); });
+
+async function analyzeOne(file, asyncMode){
+  if(file.size > 50*1024*1024) throw new Error('File exceeds 50 MB limit');
+  const body=new FormData(); body.append('file', file);
+  const headers = authHeaders();
+  if(asyncMode){
+    const res=await fetch('/api/v1/analyze/async',{method:'POST',body,headers});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(errDetail(data, res.statusText));
+    status.textContent=`Job ${data.job_id} queued…`;
+    return pollJob(data.job_id);
+  }
+  const res=await fetch('/api/v1/analyze',{method:'POST',body,headers});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(errDetail(data, res.statusText));
+  return data;
+}
+async function pollJob(jobId){
+  for(let i=0;i<120;i++){
+    await new Promise(r=>setTimeout(r,500));
+    const res=await fetch('/api/v1/jobs/'+jobId,{headers:authHeaders()});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(errDetail(j, res.statusText));
+    status.textContent=`Job ${jobId}: ${j.status}`;
+    if(j.status==='done' && j.result_id){
+      const ar=await fetch('/api/v1/analyses/'+j.result_id,{headers:authHeaders()});
+      const full=await ar.json().catch(()=>({}));
+      if(!ar.ok) throw new Error(errDetail(full, ar.statusText));
+      return full;
+    }
+    if(j.status==='error') throw new Error(j.error||'job failed');
+  }
+  throw new Error('job timeout');
+}
+
+async function run(asyncMode){
+  const files=[...fileInput.files]; if(!files.length) return;
+  go.disabled=true; goAsync.disabled=true;
+  try{
+    for(const f of files){
+      status.textContent=`Analyzing ${f.name}…`;
+      const data=await analyzeOne(f, asyncMode);
+      render(data); await loadHistory();
+    }
+    status.textContent='Done';
+  }catch(err){ status.textContent='Error: '+err.message; }
+  finally{ go.disabled=!fileInput.files.length; goAsync.disabled=!fileInput.files.length; }
+}
+go.onclick=()=>run(false); goAsync.onclick=()=>run(true);
+
+function render(data){
+  currentId=data.analysis_id||null;
+  reportLink.href = currentId ? `/api/v1/analyses/${currentId}/report.html` : '#';
+  reportLink.style.pointerEvents = currentId ? 'auto' : 'none';
+  reportLink.style.opacity = currentId ? '1' : '.4';
+  reportLink.onclick = (e) => {
+    if(!currentId){ e.preventDefault(); return; }
+    // Attach API key via fetch+blob when auth is on (plain <a> can't send headers).
+    const k = (apiKeyInput.value||'').trim();
+    if(!k) return;
+    e.preventDefault();
+    fetch(reportLink.href,{headers:authHeaders()}).then(r=>r.text()).then(html=>{
+      const blob=new Blob([html],{type:'text/html'});
+      window.open(URL.createObjectURL(blob),'_blank');
+    });
+  };
+  const risk=data.risk||{}, c=data.classification||{};
+  verdict.textContent=risk.verdict||'—';
+  verdict.style.color = risk.verdict==='Malicious'? 'var(--hot)' : risk.verdict==='Suspicious'? 'var(--warn)' : 'var(--ink)';
+  scoreLine.textContent=`risk ${risk.score ?? '—'} / 100`;
+  bars.innerHTML='';
+  if(c.label){
+    pred.textContent=c.label; pred.style.color=c.is_unknown?'var(--warn)':'var(--ink)';
+    predSub.textContent=`${(100*(c.confidence||0)).toFixed(1)}% · margin ${Number(c.margin||0).toFixed(3)}`;
+    Object.entries(c.probabilities||{}).sort((a,b)=>b[1]-a[1]).forEach(([name,p],i)=>{
+      const row=document.createElement('div'); row.className='bar-row';
+      row.innerHTML=`<label>${esc(name)}</label><em>${(100*p).toFixed(1)}%</em><div class="track"><div class="fill" style="width:0"></div></div>`;
+      bars.appendChild(row); requestAnimationFrame(()=>{ row.querySelector('.fill').style.width=(100*p).toFixed(2)+'%'; });
+    });
+  } else { pred.textContent='Visuals only'; predSub.textContent='No model'; }
+
+  tags.innerHTML='';
+  (data.risk_tags||[]).forEach(t=>{
+    const el=document.createElement('span');
+    el.className='tag'+(/(HIGH|SUSPICIOUS|UNKNOWN|MALICIOUS)/.test(t)?' warn':' ok');
+    el.textContent=t; tags.appendChild(el);
+  });
+
+  const top=(data.explanation&&data.explanation.top_features)||[];
+  explain.innerHTML = top.length ? top.map(f=>`<div><b>${esc(f.feature)}</b><span>${Number(f.contribution).toFixed(4)}</span></div>`).join('') : '<div><b>method</b><span>'+esc((data.explanation||{}).method||'none')+'</span></div>';
+
+  const m=data.metadata||{};
+  meta.innerHTML=[['file',data.filename],['sha256',(data.sha256||'').slice(0,16)+'…'],['format',m.format],['arch',m.architecture],['size',m.file_size],['entropy',m.overall_entropy],['id',data.analysis_id||'—']]
+    .map(([k,v])=>`<div><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('');
+
+  sections.innerHTML='';
+  (m.sections||[]).forEach(s=>{
+    const tr=document.createElement('tr'); if(Number(s.entropy)>7.2) tr.className='hot';
+    tr.innerHTML=`<td>${esc(s.name)}</td><td>${s.virtual_size}</td><td>${s.raw_size}</td><td>${Number(s.entropy).toFixed(4)}</td><td>${s.is_executable?'Y':''}</td>`;
+    sections.appendChild(tr);
+  });
+  if(!(m.sections||[]).length) sections.innerHTML='<tr><td colspan="5">No sections</td></tr>';
+
+  rules.innerHTML='';
+  (risk.rule_hits||[]).forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(r.rule_id)}</td><td>${esc(r.severity)}</td><td>${esc(r.weight)}</td><td>${esc(r.detail)}</td>`;
+    rules.appendChild(tr);
+  });
+  if(!(risk.rule_hits||[]).length) rules.innerHTML='<tr><td colspan="4">No hits</td></tr>';
+
+  gray.src=(data.images&&data.images.grayscale_png_base64)?('data:image/png;base64,'+data.images.grayscale_png_base64):'';
+  heat.src=(data.images&&data.images.heatmap_png_base64)?('data:image/png;base64,'+data.images.heatmap_png_base64):'';
+}
+async function loadHistory(){
+  try{
+    const res=await fetch('/api/v1/analyses?limit=30',{headers:authHeaders()});
+    const items=await res.json().catch(()=>([]));
+    if(!res.ok){
+      history.innerHTML='<div class="hist-item">History unavailable: '+esc(errDetail(items,res.statusText))+'</div>';
+      return;
+    }
+    history.innerHTML='';
+    (items||[]).forEach(it=>{
+      const d=document.createElement('div'); d.className='hist-item';
+      d.textContent=`${(it.created_at||'').slice(0,19)} · ${it.filename} · ${it.verdict||'—'} · ${it.risk_score??'—'}`;
+      d.onclick=async()=>{
+        const ar=await fetch('/api/v1/analyses/'+it.id,{headers:authHeaders()});
+        const full=await ar.json().catch(()=>({}));
+        if(!ar.ok){ status.textContent='Error: '+errDetail(full,ar.statusText); return; }
+        render(full);
+      };
+      history.appendChild(d);
+    });
+  }catch(err){
+    history.innerHTML='<div class="hist-item">History error: '+esc(err.message)+'</div>';
+  }
+}
+$('refreshHist').onclick=loadHistory; loadHistory();
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));}
+</script>
+</body>
+</html>

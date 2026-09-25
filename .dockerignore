@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local artifacts / datasets (model is rebuilt in Docker)
+artifacts/
+*.db
+data/synthetic/
+data/benign/
+data/malware/
+sample.exe
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+.git

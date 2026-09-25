@@ -1,0 +1,28 @@
+services:
+  bin2img:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      BIN2IMG_MODEL: /app/artifacts/model.cbm
+      BIN2IMG_DB: /home/bin2img/data/bin2img.db
+      # Strongly recommended when publishing a port:
+      # BIN2IMG_API_KEY: change-me
+    volumes:
+      - bin2img_data:/home/bin2img/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    restart: unless-stopped
+
+volumes:
+  bin2img_data:
