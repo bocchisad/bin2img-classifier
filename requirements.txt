@@ -1,7 +1,9 @@
-# Stage 1–5 deps (core + CatBoost + FastAPI). Stage 6 adds CLI packaging notes.
+# Compatible with Python 3.11–3.14 (CI uses 3.11/3.12; local may be newer).
 pefile==2024.8.26
 lief==0.16.7
-numpy==2.5.3
+# numpy 2.5+ requires Python >=3.12
+numpy==2.4.6; python_version < "3.12"
+numpy==2.5.3; python_version >= "3.12"
 opencv-python-headless==4.11.0.86
 scikit-image==0.26.0
 scikit-learn==1.7.2
